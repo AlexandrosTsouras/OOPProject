@@ -7,13 +7,9 @@ private:
     int posY; // up-down
 public:
 
-    Vector2(int x, int y)
+    Vector2(int x = -1, int y = -1)
     :posX(x), posY(y) {}
-
-    Vector2 operator=(const Vector2& V) {
-        Vector2 newV(V.posX, V.posY);
-        return newV;
-    }
+    
 
     int getX() {return posX;}
     int getY() {return posY;}

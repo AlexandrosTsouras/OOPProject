@@ -19,7 +19,7 @@ public:
     WorldObject(string id, char s, int x, int y)
     :ID(id), symbol(s), position(x,y) {}
 
-    void print_object() {
+    virtual void print_object() {
         cout << symbol;
     }
 
@@ -36,8 +36,8 @@ public:
 class MovingObject: public WorldObject {
    Vector2 direction;
     int speed;
+    public:
     static string count;
-public:
     MovingObject(char ch, int x,int y)
     :WorldObject(count, ch, x, y), /**CHECK, NOT READY **/ speed(HALF_SPEED), direction(1,0) {
         if (count[count.size()-1]-'0' == 9) {
@@ -55,6 +55,11 @@ public:
         cout << "Direction: (" << direction.getX() << ", " << direction.getY() << ")\n\t";
         cout << "Speed: " << speed << endl;        
     }
+
+    virtual void print_object() {
+        WorldObject::print_object();
+    }
+
 };
 //////////////
             class MovingCar: public MovingObject {
@@ -65,6 +70,10 @@ public:
                 void print_info() override {
                     cout << "Moving Car" << endl;
                     MovingObject::print_info();
+                }
+
+                void print_object() override {
+                    MovingObject::print_object();
                 }
 
             };
@@ -79,11 +88,15 @@ public:
                     cout << "Moving Bike" << endl;
                     MovingObject::print_info();
                 }
+
+                void print_object() override {
+                    MovingObject::print_object();
+                }
             };
 /////////////////////////////////////////////////////////////////////////////
 class StaticObject: public WorldObject {
-        static string count;
     public:
+    static string count;
         StaticObject(char c, int x, int y)
         :WorldObject(count, c, x, y) {
             if (count[count.size()-1]-'0' == 9) {
@@ -100,6 +113,8 @@ class StaticObject: public WorldObject {
         }
 
         void set_symbol(char c) override {WorldObject::set_symbol(c);}
+
+        virtual void print_object() {WorldObject::print_object();}
     };
 ///////////////////////////////////////
         class Sign: public StaticObject {
@@ -112,12 +127,16 @@ class StaticObject: public WorldObject {
                 StaticObject::print_info();
                 cout << "\tSignText: " << SignText << endl;
             }
+
+            virtual void print_object() {StaticObject::print_object();}
         };
 /////////////////////////////////////
                             class STOPSign: public Sign {
                             public:
                                 STOPSign(int x, int y)
                                 :Sign('S', x, y, "STOP") {}
+
+                                void print_object() override {Sign::print_object();}
                             };
 /////////////////////////////
         class ParkedVechile: public StaticObject {
@@ -129,6 +148,8 @@ class StaticObject: public WorldObject {
                 cout << "Parked Vechile:" << endl;
                 StaticObject::print_info();
             }
+
+            void print_object() override {StaticObject::print_object();}
         };
 ///////////////////////////
         class TrafficLight: public StaticObject {
@@ -164,4 +185,30 @@ class StaticObject: public WorldObject {
                     return;
                 }
             }
+
+
+            void print_object() override {StaticObject::print_object();}
+
         };
+
+class Border: public WorldObject {
+public:
+    Border(int x, int y)
+    :WorldObject("0", 'X', x, y) {}
+
+    void print_object() override {WorldObject::print_object();}
+
+};
+
+class Road: public WorldObject {
+public:
+    Road(int x, int y)
+    :WorldObject("0", '.', x, y) {}
+
+    void print_object() override {WorldObject::print_object();}
+
+};
+
+
+string MovingObject::count = "100";
+string StaticObject::count = "000";
