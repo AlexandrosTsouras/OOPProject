@@ -7,8 +7,8 @@
 
 using namespace std;
 
-#define DEAFULT_SIZE_X 40
-#define DEAFULT_SIZE_Y 40
+#define DEAFULT_SIZE_X 20
+#define DEAFULT_SIZE_Y 20
 #define DEAFULT_COUNT_MCAR 4
 #define DEAFULT_COUNT_MBIKE 2
 #define DEAFULT_COUNT_STOP 6
@@ -33,9 +33,9 @@ class World {
 
 
     //World
+    
+    
     vector<vector<WorldObject*>> Grid;
-
-
 public:
 
     World(int maxX = DEAFULT_SIZE_X, int maxY = DEAFULT_SIZE_Y, int mcar_max = DEAFULT_COUNT_MBIKE,
@@ -50,7 +50,6 @@ public:
         cout << max_size.getY();
         
         
-        cout << "geheer?";
 
 
         srand(time(NULL));
@@ -60,59 +59,53 @@ public:
             Grid[i].reserve(max_size.getX()*sizeof(WorldObject*));
             for (int j=0; j<max_size.getX(); j++) {
                 WorldObject* newObject;
-                cout << "here\n";
                 if (i%(max_size.getY()-1)==0 || j%(max_size.getX()-1)==0) {
-                    cout << "in here";
                     newObject = new Border(j, i);
                 }
                 else{
                 done = false;
-                cout << "got here'n";
                 while (done == false) {
-                    int rand_num = rand() % 6;
+                    int rand_num = rand() % 36;
                 
                     switch(rand_num) {
-                    case 0:
+                    case 0 ... 30:
                         newObject = new Road(j,i);
                         done = true;
                         continue;
-                    case 1:
+                    case 31:
                         if (MCars.size() == mcar_max) break;
                         newObject = new MovingCar(j,i);
                         MCars.push_back(newObject);
                         done = true;
                         continue;
-                    case 2:
+                    case 32:
                         if (MBikes.size() == mbike_max) break;
                         newObject = new MovingBike(j,i);
                         MBikes.push_back(newObject);
                         done = true;
                         continue;
-                    case 3:
+                    case 33:
                         if (SSTOPs.size() == stop_max) break;
                         newObject = new STOPSign(j,i);
                         SSTOPs.push_back(newObject);
                         done = true;
                         continue;
-                    case 4:
+                    case 34:
                         if (SParkedVechiles.size() == parked_max) break;
                         newObject = new ParkedVechile(j,i);
                         SParkedVechiles.push_back(newObject);
                         done = true;
                         continue;
-                    case 5:
+                    case 35:
                         if (STrafficLights.size() == traffic_lights_max) break;
                         newObject = new TrafficLight(j,i);
                         STrafficLights.push_back(newObject);
                         done = true;
                         continue;
                     }
-                    cout << "try again'n";
                 }}
                 newObject->print_object();
-                cout << "okjlsdftgrnhgikjxgsdfngrsdao\n";
                 Grid[i].push_back(newObject);
-                cout << "pushed\n";
 
             }
         }
@@ -120,6 +113,8 @@ public:
         
     }
     
+
+
     
     
     void print_world() {
@@ -134,4 +129,19 @@ public:
             cout << endl;
         }
     }
+
+
+    
+    WorldObject get_WObject(int y, int x) {
+        //get the Grid thing at that ps IDK WHAT IM DOING OK?
+        cout <<"head\n";
+        WorldObject cur = Grid[y][x]->get_Object(*Grid[y][x]);
+        cout << "tail\n";
+        return *cur;
+    }
+
+    Vector2 get_maxsize() {
+        return max_size;
+    }
+
 };

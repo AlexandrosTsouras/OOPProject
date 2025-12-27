@@ -24,17 +24,36 @@ public:
     }
 
     virtual void print_info() {
-        cout << "\tID:" << ID << "\n\tPosition: (" << position.getX() << ", " << position.getY() << ")\n\t";
+        cout << "\tID:" << ID << "\n\tPosition: (" << position.getX() << ", " << position.getY() << ")\n";
     }
 
     virtual void set_symbol(char c) {symbol = c;}
 
-    char get_symbol() {return symbol;}
 
+    virtual WorldObject* copy(const WorldObject& W) {
+        *this
+    }
+
+   
+
+    //GETS
+    char get_symbol() {return symbol;}
+    string get_ID() {return ID;}
+    Vector2 get_position() {return position;}
+
+    //for moving object
+    virtual int get_speed() {return 0;}
+    virtual Vector2 get_direction() {return 0;}
+
+    //not sure
+    WorldObject get_Object(const WorldObject& W) {
+        WorldObject* ptr;
+        return *ptr;
+    }
 };
 
 class MovingObject: public WorldObject {
-   Vector2 direction;
+    Vector2 direction;
     int speed;
     public:
     static string count;
@@ -52,14 +71,16 @@ class MovingObject: public WorldObject {
 
     virtual void print_info() {
         WorldObject::print_info();
-        cout << "Direction: (" << direction.getX() << ", " << direction.getY() << ")\n\t";
-        cout << "Speed: " << speed << endl;        
+        cout << "\tDirection: (" << direction.getX() << ", " << direction.getY() << ")\n";
+        cout << "\tSpeed: " << speed << endl;        
     }
 
     virtual void print_object() {
         WorldObject::print_object();
     }
 
+    int get_speed() override {return speed;}
+    Vector2 get_direction() override {return direction;}
 };
 //////////////
             class MovingCar: public MovingObject {
@@ -136,7 +157,15 @@ class StaticObject: public WorldObject {
                                 STOPSign(int x, int y)
                                 :Sign('S', x, y, "STOP") {}
 
-                                void print_object() override {Sign::print_object();}
+                                void print_object() override {
+                                    
+                                    Sign::print_object();
+                                }
+
+                                void print_info() override {
+                                    cout << "StopSign:\n";
+                                    Sign::print_info();
+                                }
                             };
 /////////////////////////////
         class ParkedVechile: public StaticObject {
@@ -169,6 +198,7 @@ class StaticObject: public WorldObject {
             void print_info() override {
                 cout << "Traffic Light:" << endl;
                 StaticObject::print_info();
+                cout << endl;
             }
         
             void update_traffic_light() {

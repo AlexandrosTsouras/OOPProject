@@ -11,8 +11,18 @@ public:
     :posX(x), posY(y) {}
     
 
+    Vector2 operator=(const Vector2& Vector_Given) {
+        
+        posX = Vector_Given.posX;
+        posY = Vector_Given.posY;
+
+        return *this;
+    }
+
     int getX() {return posX;}
     int getY() {return posY;}
     void setX(int x) {posX = x;}
     void setY(int y) {posY = y;}
+
+
 };
