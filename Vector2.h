@@ -1,28 +1,38 @@
-
+#include <iostream>
 using namespace std;
 
 class Vector2 {
 private:    
-    int posX; // left-right
-    int posY; // up-down
+    int X; // left-right
+    int Y; // up-down
 public:
 
     Vector2(int x = -1, int y = -1)
-    :posX(x), posY(y) {}
+    :X(x), Y(y) {}
     
+    Vector2(const Vector2& given)
+    {
+        X = given.X;
+        Y = given.Y;
+    }
+
+    // Vector2(int a):X(a), Y(a) {}
 
     Vector2 operator=(const Vector2& Vector_Given) {
         
-        posX = Vector_Given.posX;
-        posY = Vector_Given.posY;
+        this->X = Vector_Given.X;
+        this->Y = Vector_Given.Y;
 
         return *this;
     }
 
-    int getX() {return posX;}
-    int getY() {return posY;}
-    void setX(int x) {posX = x;}
-    void setY(int y) {posY = y;}
+    int getX() {return X;}
+    int getY() {return Y;}
+    void setX(int x) {X = x;}
+    void setY(int y) {Y = y;}
 
+    void print_info() {
+        cout << "(" << X << ", " << Y << ")" << endl;
+    }
 
 };

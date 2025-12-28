@@ -30,9 +30,6 @@ public:
     virtual void set_symbol(char c) {symbol = c;}
 
 
-    virtual WorldObject* copy(const WorldObject& W) {
-        *this
-    }
 
    
 
@@ -42,13 +39,16 @@ public:
     Vector2 get_position() {return position;}
 
     //for moving object
-    virtual int get_speed() {return 0;}
-    virtual Vector2 get_direction() {return 0;}
+    virtual int get_speed()   {return 0;}
+    virtual Vector2 get_direction() {Vector2 empty(-2); return empty;}
+    //for everything else
+    virtual string get_signText() {return "EMPTY";}
+    virtual char get_TLC() {return 'X';}
+
 
     //not sure
-    WorldObject get_Object(const WorldObject& W) {
-        WorldObject* ptr;
-        return *ptr;
+    WorldObject* get_Object(WorldObject* W) {
+        return W;
     }
 };
 
@@ -136,6 +136,9 @@ class StaticObject: public WorldObject {
         void set_symbol(char c) override {WorldObject::set_symbol(c);}
 
         virtual void print_object() {WorldObject::print_object();}
+
+        // char get_symbol() {return WorldObject::get_symbol();}
+        // virtual string get_signText();
     };
 ///////////////////////////////////////
         class Sign: public StaticObject {
@@ -150,6 +153,8 @@ class StaticObject: public WorldObject {
             }
 
             virtual void print_object() {StaticObject::print_object();}
+
+            string get_signText() override {return SignText;}
         };
 /////////////////////////////////////
                             class STOPSign: public Sign {
@@ -166,6 +171,9 @@ class StaticObject: public WorldObject {
                                     cout << "StopSign:\n";
                                     Sign::print_info();
                                 }
+
+                                string get_signText() {return Sign::get_signText();}
+
                             };
 /////////////////////////////
         class ParkedVechile: public StaticObject {
@@ -218,6 +226,10 @@ class StaticObject: public WorldObject {
 
 
             void print_object() override {StaticObject::print_object();}
+
+            char get_TLC() override {
+                return StaticObject::get_symbol();
+            }
 
         };
 

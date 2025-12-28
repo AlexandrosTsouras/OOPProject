@@ -20,7 +20,7 @@ class SensorReading {
 public:
     //G for Given
     SensorReading(string typeG = "NULL", int distanceG = 0, string IDG = "XXX", int confidenceG = 0, int speedG = STOPPED, string signTextG = "XXX", char TLCG = 'X')
-    :type(typeG), distance(distanceG), position(0,0), ID(IDG), confidence(confidenceG), speed(speedG), direction(0,0), signText(signTextG), TrafficLightColor(TLCG) {}
+    :type(typeG), distance(distanceG), position(), ID(IDG), confidence(confidenceG), speed(speedG), direction(), signText(signTextG), TrafficLightColor(TLCG) {}
 
     //to make it clearer make everything have a set func
     void set_type(const string typeG) {type = typeG;}
@@ -32,6 +32,21 @@ public:
     void set_direction(const Vector2 directionG) {direction = directionG;}
     void set_signText(const string signTextG) {signText = signTextG;}
     void set_TLC(const char TLCG) {TrafficLightColor = TLCG;}
+
+
+    void print_info() {
+        cout << "type: " << type << endl;
+        cout << "distance: " << distance << endl;
+        cout << "pos: ";
+        position.print_info();
+        cout << "id: " << ID << endl;
+        cout << "conf: " << confidence << endl;
+        cout << "speed: " << speed << endl;
+        cout << "dir: ";
+        direction.print_info();
+        cout << "sT: " << signText << endl;
+        cout << "TLC: " << TrafficLightColor << endl;
+    }
 
 };
 
@@ -45,7 +60,7 @@ public:
 
     LidarSensor() {}
 
-    void get_Readings(Vector2 CarPosition, World W) {
+    void get_Readings(Vector2 CarPosition, World* W) {
 
         //it checks 9x9 around it so I think
         //first get topleft and bottomright
@@ -56,7 +71,7 @@ public:
         else {topleft.setY(CarPosition.getY()-4);}
         
         Vector2 bottomright;
-        Vector2 GridSize = W.get_maxsize();
+        Vector2 GridSize = W->get_maxsize();
         if (CarPosition.getX()+4<=0) {bottomright.setX(GridSize.getX()-1);}
         else {bottomright.setX(CarPosition.getX()+4);}
         if (CarPosition.getY()+4<=0) {bottomright.setY(GridSize.getY()-1);}
@@ -66,7 +81,7 @@ public:
         for (int i=topleft.getY(); i<bottomright.getY(); i++) {
             for (int j=topleft.getX(); j<bottomright.getX(); j++) {
                 if (i == CarPosition.getY() && j == CarPosition.getX()) continue;
-                WorldObject WO = W.get_WObject(i,j);
+                WorldObject WO = *(W->get_WObject(i,j));
                 if (WO.get_symbol() == '.') continue;
                 SensorReading newSense;
                 Readings.reserve(Readings.size()+1);
@@ -99,13 +114,13 @@ public:
     RadarSensor() {}
 
 
-    void get_Readings(Vector2 CarPosition, Vector2 CarDirection, World W) {
+    void get_Readings(Vector2 CarPosition, Vector2 CarDirection, World* W) {
 
         //gotta get the direction of the car
         Vector2 topleft = CarPosition;
         Vector2 bottomright = CarPosition;
         if (CarDirection.getX() == 1 && CarDirection.getY() == 0) { // right
-            if (CarPosition.getX()+12 >= W.get_maxsize().getX()) {bottomright.setX(W.get_maxsize().getX()-1);}
+            if (CarPosition.getX()+12 >= W->get_maxsize().getX()) {bottomright.setX(W->get_maxsize().getX()-1);}
             else {bottomright.setX(CarPosition.getX()+12);}
         }
         if (CarDirection.getX() == -1 && CarDirection.getY() == 0) { // left
@@ -113,7 +128,7 @@ public:
             else {topleft.setX(CarPosition.getX()-12);}
         }
         if (CarDirection.getX() == 0 && CarDirection.getY() == 1) { // down
-            if (CarPosition.getY()+12 >= W.get_maxsize().getY()) {bottomright.setY(W.get_maxsize().getY()-1);}
+            if (CarPosition.getY()+12 >= W->get_maxsize().getY()) {bottomright.setY(W->get_maxsize().getY()-1);}
             else {bottomright.setY(CarPosition.getY()+12);}
         }
         if (CarDirection.getX() == 0 && CarDirection.getY() == -1) { // up
@@ -125,19 +140,172 @@ public:
         for (int i=topleft.getY(); i<=bottomright.getY(); i++) {
             for (int j=topleft.getX(); j<=bottomright.getX(); j++) {
                 if (i == CarPosition.getY() && j == CarPosition.getX()) continue;
-                cout << "it's here right?\n";
-                WorldObject WO = W.get_WObject(i,j);
-                cout << "Hello?" << endl;
-                if (WO.get_ID()[0] == '0') continue; //Every other object other than Moving have 0 as the first char of their ID
+                WorldObject* WO = W->get_WObject(i,j);
+                if (WO->get_ID()[0] == '0') continue; //Every other object other than Moving have 0 as the first char of their ID
                 SensorReading newSense;
                 Readings.reserve(Readings.size()+1);
+                //I know it's not exactly said but since it only gets moving objects might as well set it
+                newSense.set_type("Moving");
                 //speed
-                int speedToGive = WO.get_speed();
+                const int speedToGive = WO->get_speed();
+                newSense.set_speed(speedToGive);
+                //direction
+                const Vector2 dir = WO->get_direction();
+                newSense.set_direction(dir);
+                //distance
+                int dx = abs(CarPosition.getX()-j);
+                int dy = abs(CarPosition.getY()-i);
+                const int d = dx+dy+1;
+                newSense.set_distance(d);
+                //confidence
+                newSense.set_confidence(55); //random ahh
+
+                //push
+                Readings.push_back(newSense);
                 
-                cout << speedToGive << endl;
+            }
+        }
+        // vector<SensorReading>::iterator it;
+        // cout << "here?\n";
+        // int i=0;
+        // for (it = Readings.begin(); it<Readings.end(); ++it) {
+        //     cout << i++ << ": ";
+        //     it->print_info();
+        // }
+    }
+    
+};
+
+
+class CameraSensor {
+
+    vector<SensorReading> Readings;
+
+public:
+
+    CameraSensor() {}
+
+    void get_Readings(Vector2 CarPosition, Vector2 CarDirection, World* W) {
+
+        //7x7 in front so like
+        Vector2 topleft;
+        Vector2 bottomright;
+
+        //this is gonna be a pain :((((
+        int carX = CarPosition.getX();
+        int carY = CarPosition.getY();
+        if (CarDirection.getX() == 1 && CarDirection.getY() == 0) { //right
+            if (carX+1 >= W->get_maxsize().getX()-1) { //car right at the edge (edge case since it would not go right then but whaeva)
+                return;
+            }
+            //width
+            topleft.setX(carX+1);
+            if (carX+8>=W->get_maxsize().getX()-1) {
+                bottomright.setX(W->get_maxsize().getX());
+            }
+            else {
+                bottomright.setX(carX+8);
+            }
+            // height
+            if (carY-3 <= 0) {
+                topleft.setY(1);
+            } else {topleft.setY(carY-3);}
+            if (carY+3 >= W->get_maxsize().getY()) {
+                bottomright.setY(W->get_maxsize().getY()-1);
+            } else {bottomright.setY(carY+3);}
+        }
+
+        if (CarDirection.getX() == -1 && CarDirection.getY() == 0) { //left
+            if (carX == 1) return; //edge case ig
+            //width
+            bottomright.setX(carX-1);
+            if (carX-8<=0) {
+                topleft.setX(1);
+            } else {topleft.setX(carX-8);}
+            // height
+            if (carY-3 <= 0) {
+                topleft.setY(1);
+            } else {topleft.setY(carY-3);}
+            if (carY+3 >= W->get_maxsize().getY()) {
+                bottomright.setY(W->get_maxsize().getY()-1);
+            } else {bottomright.setY(carY+3);}
+            
+
+        }  
+    
+        if (CarDirection.getX() == 0 && CarDirection.getY() == 1) { //down
+            if (carY == W->get_maxsize().getY()-1) return;
+            //height
+            topleft.setY(carY+1);
+            if (carY+8>=W->get_maxsize().getY()) {
+                bottomright.setY(W->get_maxsize().getY()-1);
+            } else {bottomright.setY(carY+8);}
+            //width
+            if (carX-3<=0) {
+                topleft.setX(1);
+            } else {topleft.setX(carX-3);}
+            if (carX+3>=W->get_maxsize().getX()) {
+                bottomright.setX(W->get_maxsize().getX()-1);
+            } else {bottomright.setX(carX+3);}
+        }
+
+        if (CarDirection.getX() == 0 && CarDirection.getY() == -1) { //up
+            if (carY == 1) return;
+            //height
+            bottomright.setY(1);
+            if (carY-8 <=0 ) {
+                topleft.setY(1);
+            } else {topleft.setY(carY-8);}
+            //width
+            if (carX-3<=0) {
+                topleft.setX(1);
+            } else {topleft.setX(carX-3);}
+            if (carX+3>=W->get_maxsize().getX()) {
+                bottomright.setX(W->get_maxsize().getX()-1);
+            } else {bottomright.setX(carX+3);}
+        }
+
+
+        for (int i=topleft.getY(); i<=bottomright.getY(); i++) {
+            for (int j = topleft.getX(); j<=bottomright.getY(); j++) {
+                WorldObject WO = *(W->get_WObject(i, j));
+                if (WO.get_symbol() == '.') continue;
+
+                Readings.reserve(Readings.size()+1);
+                SensorReading newSense;
+
+                //type
+                if (WO.get_ID()[0] == '1') {newSense.set_type("Moving");}
+                else {newSense.set_type("Static");}
+                //distance
+                int dx = abs(carX-j);
+                int dy = abs(carY-i);
+                newSense.set_distance(dx+dy+1);
+                //position
+                newSense.set_position(WO.get_position());
+                //ID
+                newSense.set_ID(WO.get_ID());
+                //confidence
+                newSense.set_confidence(67);
+                //speed
+                newSense.set_speed(WO.get_speed());
+                //direction
+                newSense.set_direction(WO.get_direction());
+                //signText
+                newSense.set_signText(WO.get_signText());
+                //TLC
+                newSense.set_TLC(WO.get_TLC());
+
                 Readings.push_back(newSense);
             }
         }
 
+        vector<SensorReading>::iterator it;
+        for (it = Readings.begin(); it!=Readings.end(); ++it) {
+            it->print_info();
+            
+        }
+
     }
+
 };

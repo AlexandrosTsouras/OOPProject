@@ -45,12 +45,7 @@ public:
         max_size.setX(maxX);
         max_size.setY(maxY);
         
-        //world generation
-        cout << max_size.getX();
-        cout << max_size.getY();
-        
-        
-
+        //world generation        
 
         srand(time(NULL));
         bool done;
@@ -104,12 +99,16 @@ public:
                         continue;
                     }
                 }}
-                newObject->print_object();
-                Grid[i].push_back(newObject);
 
+                ///
+                
+                //
+                
+                Grid[i].push_back(newObject);
             }
         }
         
+
         
     }
     
@@ -132,12 +131,11 @@ public:
 
 
     
-    WorldObject get_WObject(int y, int x) {
+    WorldObject* get_WObject(int y, int x) {
         //get the Grid thing at that ps IDK WHAT IM DOING OK?
-        cout <<"head\n";
-        WorldObject cur = Grid[y][x]->get_Object(*Grid[y][x]);
-        cout << "tail\n";
-        return *cur;
+        
+        WorldObject* cur = Grid[y][x];
+        return cur;
     }
 
     Vector2 get_maxsize() {
