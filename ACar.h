@@ -33,25 +33,40 @@ public:
     void set_signText(const string signTextG) {signText = signTextG;}
     void set_TLC(const char TLCG) {TrafficLightColor = TLCG;}
 
+    const string get_type() {return type;}
+    const int get_distance() {return distance;}
+    const Vector2 get_position() {return position;}
+    const string get_ID() {return ID;}
+    const int get_confidence() {return confidence;}
+    const int get_speed() {return speed;}
+    const Vector2 get_direction() {return direction;}
+    const string get_signText() {return signText;}
+    const char get_TLC() {return TrafficLightColor;}
+
+
+
+
 
     void print_info() {
-        cout << "type: " << type << endl;
-        cout << "distance: " << distance << endl;
-        cout << "pos: ";
+        cout << "ID: " << ID << endl;
+        cout << '\t' << "type: " << type << endl;
+        cout << '\t' << "distance: " << distance << endl;
+        cout << '\t' << "pos: ";
         position.print_info();
-        cout << "id: " << ID << endl;
-        cout << "conf: " << confidence << endl;
-        cout << "speed: " << speed << endl;
-        cout << "dir: ";
+        cout << '\t' << "conf: " << confidence << endl;
+        cout << '\t' << "speed: " << speed << endl;
+        cout << '\t' << "dir: ";
         direction.print_info();
-        cout << "sT: " << signText << endl;
-        cout << "TLC: " << TrafficLightColor << endl;
+        cout << '\t' << "sT: " << signText << endl;
+        cout << '\t' << "TLC: " << TrafficLightColor << endl;
     }
 
 };
 
 
 //I don't think LidarSensor needs anything other than the checking lowkey
+//9x9
+//sees moving-static but only returns type and distance 
 class LidarSensor {
 
     vector<SensorReading> Readings;
@@ -97,6 +112,8 @@ public:
                 newSense.set_distance(dx+dy);
                 //confidence
                 newSense.set_confidence(99); //confidence needs a good rework at the end
+                //ID
+                newSense.set_ID(WO.get_ID());
 
                 Readings.push_back(newSense);
             }
@@ -104,8 +121,12 @@ public:
 
     }
 
+    vector<SensorReading> get_Data() {return Readings;}
+
 };
 
+//12 in front
+//sees only moving
 class RadarSensor {
     
     vector<SensorReading> Readings;
@@ -159,6 +180,8 @@ public:
                 newSense.set_distance(d);
                 //confidence
                 newSense.set_confidence(55); //random ahh
+                //ID
+                newSense.set_ID(WO->get_ID());
 
                 //push
                 Readings.push_back(newSense);
@@ -174,6 +197,8 @@ public:
         // }
     }
     
+    vector<SensorReading> get_Data() {return Readings;}
+
 };
 
 
@@ -309,5 +334,96 @@ public:
         // }
 
     }
+
+    vector<SensorReading> get_Data() {return Readings;}
+
+};
+
+class AutomaticCar {    //ACar
+
+    LidarSensor LS;
+    RadarSensor RS;
+    CameraSensor CS;
+
+    vector<SensorReading> completed_readings;
+
+    Vector2 CarPosition;
+    Vector2 CarDirection;
+
+public:
+
+    AutomaticCar() {
+        Vector2 temp(5,5);
+        Vector2 temp1(1,0);
+        CarPosition = temp;
+        CarDirection = temp1;
+    }
+
+    void fuseSensorData() {
+        //There are defnitely better ways to go about it but I think a triple loop will be my go to
+        vector<SensorReading>::iterator it0;  //Camera Sensor
+        vector<SensorReading>::iterator it1;  //Lidar Sensor
+        vector<SensorReading> CS_Data = CS.get_Data();
+        vector<SensorReading> LS_Data = LS.get_Data();
+        vector<SensorReading> RS_Data = RS.get_Data();
+        
+        //first insert the "everything"
+        for (it0 = CS_Data.begin(); it0 != CS_Data.end(); ++it0) {
+            completed_readings.push_back(*it0);
+            // cout << "Found through Camera: ";
+            // (--completed_readings.end())->print_info();
+        }
+
+        //then add the "most something"
+        for (it1 = LS_Data.begin(); it1 != LS_Data.end(); ++it1) {
+            bool found = false;
+            for (it0 = completed_readings.begin(); it0 != completed_readings.end(); ++it0) {
+                if (it0->get_ID() == it1->get_ID()) {found = true; break;}
+            }
+            if (!found) {completed_readings.push_back(*it1);
+                // cout << "Found through Lidar: ";
+                // (--completed_readings.end())->print_info();
+            }
+        }
+
+        //add the "least something"
+        for (it1 = RS_Data.begin(); it1 != RS_Data.end(); ++it1) {
+            bool found = false;
+            for (it0 = completed_readings.begin(); it0 != completed_readings.end(); ++it0) {
+                if (it0->get_ID() == it1->get_ID()) {
+                    //there's 2 cases
+                    // 1] it was seen by the Camera Sensor
+                    //        •Everything is already set and needs nothing
+                    // 2] it was seen by the Lidar Sensor
+                    //        •Lidar and Radar both have distance and confidence, while type is definite
+                    //        •So only speed and direction is needed
+                    it0->set_speed(it1->get_speed());
+                    it0->set_direction(it1->get_direction());
+                    found == true;
+                }
+            
+            }
+            if (!found) {completed_readings.push_back(*it1);
+                // cout << "Found through Radar: ";
+                // (--completed_readings.end())->print_info();
+            }
+        }
+
+        // for (it0 = completed_readings.begin(); it0 != completed_readings.end(); ++it0) {
+        //     it0->print_info();
+        // }
+    }
+
+
+    //imagine that the 3 Sensors have done their little update thing to get readings
+    void AC_Update(World* W) {
+        //assume random world
+        LS.get_Readings(CarPosition, W);
+        RS.get_Readings(CarPosition, CarDirection, W);
+        CS.get_Readings(CarPosition, CarDirection, W);
+        fuseSensorData();
+
+    }
+
 
 };

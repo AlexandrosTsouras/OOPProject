@@ -43,7 +43,7 @@ public:
     virtual Vector2 get_direction() {Vector2 empty(-2); return empty;}
     //for everything else
     virtual string get_signText() {return "EMPTY";}
-    virtual char get_TLC() {return 'X';}
+    virtual char get_TLC() {return 'X';} //we love alt code
 
 
     //not sure
