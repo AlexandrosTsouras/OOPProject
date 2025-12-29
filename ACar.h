@@ -266,45 +266,47 @@ public:
         }
 
 
+        // cout << "Checking from (" << topleft.getX() << ", " << topleft.getY() << ") to (" << bottomright.getX() << ", " << bottomright.getY() << ")" << endl;
+
         for (int i=topleft.getY(); i<=bottomright.getY(); i++) {
-            for (int j = topleft.getX(); j<=bottomright.getY(); j++) {
-                WorldObject WO = *(W->get_WObject(i, j));
-                if (WO.get_symbol() == '.') continue;
+            for (int j = topleft.getX(); j<=bottomright.getX(); j++) {
+                // cout << "Now Checking (" << j << ", " << i << ")" << endl;
+                WorldObject* WO = (W->get_WObject(i, j));
+                if (WO->get_symbol() == '.') continue;
 
                 Readings.reserve(Readings.size()+1);
                 SensorReading newSense;
 
                 //type
-                if (WO.get_ID()[0] == '1') {newSense.set_type("Moving");}
+                if (WO->get_ID()[0] == '1') {newSense.set_type("Moving");}
                 else {newSense.set_type("Static");}
                 //distance
                 int dx = abs(carX-j);
                 int dy = abs(carY-i);
                 newSense.set_distance(dx+dy+1);
                 //position
-                newSense.set_position(WO.get_position());
+                newSense.set_position(WO->get_position());
                 //ID
-                newSense.set_ID(WO.get_ID());
+                newSense.set_ID(WO->get_ID());
                 //confidence
                 newSense.set_confidence(67);
                 //speed
-                newSense.set_speed(WO.get_speed());
+                newSense.set_speed(WO->get_speed());
                 //direction
-                newSense.set_direction(WO.get_direction());
+                newSense.set_direction(WO->get_direction());
                 //signText
-                newSense.set_signText(WO.get_signText());
+                newSense.set_signText(WO->get_signText());
                 //TLC
-                newSense.set_TLC(WO.get_TLC());
+                newSense.set_TLC(WO->get_TLC());
 
                 Readings.push_back(newSense);
             }
         }
 
-        vector<SensorReading>::iterator it;
-        for (it = Readings.begin(); it!=Readings.end(); ++it) {
-            it->print_info();
-            
-        }
+        // vector<SensorReading>::iterator it;
+        // for (it = Readings.begin(); it!=Readings.end(); ++it) {
+        //     it->print_info();
+        // }
 
     }
 

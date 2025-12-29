@@ -39,7 +39,7 @@ public:
     Vector2 get_position() {return position;}
 
     //for moving object
-    virtual int get_speed()   {return 0;}
+    virtual int get_speed() {return -1;}
     virtual Vector2 get_direction() {Vector2 empty(-2); return empty;}
     //for everything else
     virtual string get_signText() {return "EMPTY";}
