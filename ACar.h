@@ -1,9 +1,10 @@
 #include <iostream>
 #include <vector>
-#include <cmath>
 #include "World.h"
 
 using namespace std;
+
+vector<char> problems = {'S', 'P', '?'};
 
 
 //first make the sensors to put in the car
@@ -339,6 +340,12 @@ public:
 
 };
 
+
+// class NavigationSystem {
+
+// };
+
+
 class AutomaticCar {    //ACar
 
     LidarSensor LS;
@@ -347,18 +354,90 @@ class AutomaticCar {    //ACar
 
     vector<SensorReading> completed_readings;
 
+    int speed;
     Vector2 CarPosition;
     Vector2 CarDirection;
+    static char symbol;
+    Vector2 final_destination;
 
 public:
 
-    AutomaticCar() {
+    AutomaticCar(){
         Vector2 temp(5,5);
         Vector2 temp1(1,0);
         CarPosition = temp;
         CarDirection = temp1;
+
+
+
     }
 
+    void accelerate() {
+        if (speed == FULL_SPEED) return;
+        speed++;
+        return;}
+    void decelerate() {
+        if (speed == STOPPED) return;
+        speed--;
+        return;}
+    void turn(string turn) {
+        if (CarDirection.getX() == 1) {
+            switch(turn) {
+                case "left":
+                    CarDirection.setX() = 0;
+                    CarDirection.setY() = -1;
+                    break;
+                case "right":
+                    CarDirection.setX() = 0;
+                    CarDirection.setY() = 1;
+                    break;
+            }
+        }
+        if (CarDirection.getX() == -1) {
+            switch(turn) {
+                case "left":
+                    CarDirection.setX() = 0;
+                    CarDirection.setY() = 1;
+                    break;
+                case "right":
+                    CarDirection.setX() = 0;
+                    CarDirection.setY() = -1;
+                    break;
+            }
+        }
+        if (CarDirection.getY() == 1) {
+            switch(turn) {
+                case "left":
+                    CarDirection.setX() = 1;
+                    CarDirection.setY() = 0;
+                    break;
+                case "right":
+                    CarDirection.setX() = -1;
+                    CarDirection.setY() = 0;
+                    break;
+            }
+        }
+        if (CarDirection.getY() == -1) {
+            switch(turn) {
+                case "left":
+                    CarDirection.setX() = -1;
+                    CarDirection.setY() = 0;
+                    break;
+                case "right":
+                    CarDirection.setX() = 1;
+                    CarDirection.setY() = 0;
+                    break;
+            }
+        }
+        
+        return;
+    }
+
+
+
+
+
+    //
     void fuseSensorData() {
         //There are defnitely better ways to go about it but I think a triple loop will be my go to
         vector<SensorReading>::iterator it0;  //Camera Sensor
@@ -415,6 +494,36 @@ public:
     }
 
 
+    
+    void execute() {
+        
+        //GPS close thing whatever
+        bool decelerated = false;
+        //first execute speed thing
+        vector<SensorReading>::iterator it;
+        for (it=completed_readings.begin(); it != completed_readings.end(); ++it) {
+            //traffic light check
+            if ((it->get_TLC() == 'Y' || it->get_TLC() == 'R' ) && in_front(CarPosition, CarDirection, it->get_position())) {
+                decelerate();
+                decelerated = true;
+            }
+
+            //moving object nearby
+            if (it->get_ID()[0] == '1' && d(CarPosition, it->get_position())<3 /*somethng something*/ && !decelerated) {
+                decelerate();
+                decelerated = true;
+            }
+            
+
+        }
+        if (d(CarDirection, final_destination) && in_front(CarPosition, CarDirection, final_destination) && !decelerated) decelerate();
+
+        if (d(CarDirection, it->position()) && in_front(CarPosition, CarDirection, it->position())) turn("left");
+
+    }
+
+
+
     //imagine that the 3 Sensors have done their little update thing to get readings
     void AC_Update(World* W) {
         //assume random world
@@ -423,7 +532,15 @@ public:
         CS.get_Readings(CarPosition, CarDirection, W);
         fuseSensorData();
 
+        completed_readings.clear();
     }
 
 
+
+
+    //ignore
+    void set_symbol() {symbol = '@';}
 };
+
+
+// AutomaticCar::set_symbol();
