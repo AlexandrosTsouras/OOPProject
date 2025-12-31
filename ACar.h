@@ -5,7 +5,10 @@
 using namespace std;
 
 vector<char> problems = {'S', 'P', '?'};
-
+const Vector2 UP(0, -1);
+const Vector2 DOWN(0, -1);
+const Vector2 LEFT(-1,0);
+const Vector2 RIGHT(1,0);
 
 //first make the sensors to put in the car
 class SensorReading {
@@ -101,6 +104,7 @@ public:
                 if (WO.get_symbol() == '.') continue;
                 SensorReading newSense;
                 Readings.reserve(Readings.size()+1);
+                // cout << "WHERE\n";
                 //type
                 if (WO.get_symbol() == 'B' || WO.get_symbol() == 'C') {
                     newSense.set_type("Moving");
@@ -115,8 +119,9 @@ public:
                 newSense.set_confidence(99); //confidence needs a good rework at the end
                 //ID
                 newSense.set_ID(WO.get_ID());
-
+                // cout << "Lidar\n";
                 Readings.push_back(newSense);
+                // cout << "Lidar done\n";
             }
         }
 
@@ -160,8 +165,10 @@ public:
         
         
         for (int i=topleft.getY(); i<=bottomright.getY(); i++) {
+            // cout << "def not right?\n";
             for (int j=topleft.getX(); j<=bottomright.getX(); j++) {
                 if (i == CarPosition.getY() && j == CarPosition.getX()) continue;
+                // cout << "mayhaps?\n";
                 WorldObject* WO = W->get_WObject(i,j);
                 if (WO->get_ID()[0] == '0') continue; //Every other object other than Moving have 0 as the first char of their ID
                 SensorReading newSense;
@@ -185,7 +192,9 @@ public:
                 newSense.set_ID(WO->get_ID());
 
                 //push
+                // cout << "perhaps\n";
                 Readings.push_back(newSense);
+                // cout << "Nuh uh\n";
                 
             }
         }
@@ -324,8 +333,9 @@ public:
                 newSense.set_signText(WO->get_signText());
                 //TLC
                 newSense.set_TLC(WO->get_TLC());
-
+                // cout << "Camera\n";
                 Readings.push_back(newSense);
+                // cout << "Camera done\n";
             }
         }
 
@@ -346,7 +356,7 @@ public:
 // };
 
 
-class AutomaticCar {    //ACar
+class AutomaticCar: public WorldObject {    //ACar
 
     LidarSensor LS;
     RadarSensor RS;
@@ -354,19 +364,33 @@ class AutomaticCar {    //ACar
 
     vector<SensorReading> completed_readings;
 
+
     int speed;
     Vector2 CarPosition;
     Vector2 CarDirection;
     static char symbol;
     Vector2 final_destination;
-
+    bool done;
 public:
 
-    AutomaticCar(){
-        Vector2 temp(5,5);
-        Vector2 temp1(1,0);
-        CarPosition = temp;
-        CarDirection = temp1;
+    AutomaticCar(World* W)
+    :WorldObject("-1", '@', 0, 0) {
+        this->speed = FULL_SPEED;
+        done = false;
+        for (int i = 1; i<W->get_maxsize().getY()-1; i++) {
+            for (int j=1; j<W->get_maxsize().getX()-1; j++) {
+                if (W->get_thing(j, i)->get_ID() == "-1") {
+                    CarPosition.setX(j);
+                    CarPosition.setY(i);
+                    CarDirection = RIGHT;
+                    final_destination.setX(5);
+                    final_destination.setY(5);
+
+                    this->set_position(CarPosition);
+                    W->set_thing(this, j, i);
+                }
+            }
+        }
 
 
 
@@ -380,64 +404,89 @@ public:
         if (speed == STOPPED) return;
         speed--;
         return;}
-    void turn(string turn) {
+    void turn(string turn = "NaN") {
         if (CarDirection.getX() == 1) {
-            switch(turn) {
-                case "left":
-                    CarDirection.setX() = 0;
-                    CarDirection.setY() = -1;
-                    break;
-                case "right":
-                    CarDirection.setX() = 0;
-                    CarDirection.setY() = 1;
-                    break;
+            if (turn == "left"){
+                CarDirection.setX(0);
+                CarDirection.setY(-1);
+            }
+            if (turn == "right") {
+                CarDirection.setX(0);
+                CarDirection.setY(1);   
             }
         }
         if (CarDirection.getX() == -1) {
-            switch(turn) {
-                case "left":
-                    CarDirection.setX() = 0;
-                    CarDirection.setY() = 1;
-                    break;
-                case "right":
-                    CarDirection.setX() = 0;
-                    CarDirection.setY() = -1;
-                    break;
-            }
+            if (turn == "left") {
+                    CarDirection.setX(0);
+                    CarDirection.setY(1);
+                }
+            if (turn == "right") {
+                    CarDirection.setX(0);
+                    CarDirection.setY(-1);
+                }
+            
         }
         if (CarDirection.getY() == 1) {
-            switch(turn) {
-                case "left":
-                    CarDirection.setX() = 1;
-                    CarDirection.setY() = 0;
-                    break;
-                case "right":
-                    CarDirection.setX() = -1;
-                    CarDirection.setY() = 0;
-                    break;
-            }
+                if (turn == "left") {
+                    CarDirection.setX(1);
+                    CarDirection.setY(0);
+                    }
+                if (turn == "right"){
+                    CarDirection.setX(-1);
+                    CarDirection.setY(0);
+                    }
+            
         }
         if (CarDirection.getY() == -1) {
-            switch(turn) {
-                case "left":
-                    CarDirection.setX() = -1;
-                    CarDirection.setY() = 0;
-                    break;
-                case "right":
-                    CarDirection.setX() = 1;
-                    CarDirection.setY() = 0;
-                    break;
-            }
+            if (turn == "left"){
+                    CarDirection.setX(-1);
+                    CarDirection.setY(0);
+                    }
+            if (turn == "right"){
+                    CarDirection.setX(1);
+                    CarDirection.setY(0);
+                    }
+
         }
         
-        return;
-    }
-
-
-
-
-
+        return;}
     //
+    void turn(Vector2 V) {
+        if (CarDirection == RIGHT) {
+            if (CarPosition.getY() < V.getY()) {
+                turn("right");
+            } else {turn("left");}
+            return;
+        }
+        if (CarDirection == LEFT) {
+            if (CarPosition.getY() < V.getY()) {
+                turn("left");
+            } else {turn("right");}
+            return;
+        }if (CarDirection == UP) {
+            if (CarPosition.getX() < V.getX()) {
+                turn("right");
+            } else {turn("left");}
+            return;
+        }if (CarDirection == DOWN) {
+            if (CarPosition.getX() < V.getX()) {
+                turn("left");
+            } else {turn("right");}
+            return;
+        }}
+    //
+    void turn_to(Vector2 pos) {
+        if (CarPosition.getX() == pos.getX()) {
+            if (CarPosition.getY() < pos.getY()) CarDirection = DOWN;
+            else CarDirection = UP;
+        }
+        if (CarPosition.getY() == pos.getY()) {
+            if (CarPosition.getX() < pos.getX()) CarDirection = RIGHT;
+            else CarDirection = LEFT;
+        }}
+    //
+    
+    
     void fuseSensorData() {
         //There are defnitely better ways to go about it but I think a triple loop will be my go to
         vector<SensorReading>::iterator it0;  //Camera Sensor
@@ -492,10 +541,8 @@ public:
         //     it0->print_info();
         // }
     }
-
-
     
-    void execute() {
+    void execute(World* W) {
         
         //GPS close thing whatever
         bool decelerated = false;
@@ -514,32 +561,58 @@ public:
                 decelerated = true;
             }
             
+            if (d(CarPosition, it->get_position()) == 1 && in_front(CarPosition, CarDirection, it->get_position())) {
+                turn(final_destination);
+            }
 
         }
-        if (d(CarDirection, final_destination) && in_front(CarPosition, CarDirection, final_destination) && !decelerated) decelerate();
+        if (d(CarDirection, final_destination)<=5 && in_front(CarPosition, CarDirection, final_destination) && !decelerated) decelerate();
 
-        if (d(CarDirection, it->position()) && in_front(CarPosition, CarDirection, it->position())) turn("left");
+        
+        if (!decelerated) accelerate();
+        //it turns if:
+        //  • It's in the same X/Y location as the final destination
+        //  • There's a Stop sign in front of it
+        //Lowkey I think that's it, in my defense I have 0 driving experience, I've barely ridden a bike
+
+        int carX = CarPosition.getX();
+        int carY = CarPosition.getY();
+        int finalX = final_destination.getX();
+        int finalY = final_destination.getY();
+
+
+        if (carX == finalX || carY == finalY) {
+            turn_to(final_destination);
+            return;
+        }
+        
+        WorldObject* newthing = new Road(CarPosition.getX(), CarPosition.getY());
+        W->set_thing(newthing, CarPosition.getX(), CarPosition.getY());
+        cout << "X: " << carX+CarDirection.getX()*speed << "\nY: " << carY+CarDirection.getY()*speed << endl;
+        W->set_thing(this, carX+CarDirection.getX()*speed, carY+CarDirection.getY()*speed);
 
     }
 
-
-
     //imagine that the 3 Sensors have done their little update thing to get readings
-    void AC_Update(World* W) {
+    void Full_Update(World* W) {
         //assume random world
+        W->Update();
         LS.get_Readings(CarPosition, W);
         RS.get_Readings(CarPosition, CarDirection, W);
         CS.get_Readings(CarPosition, CarDirection, W);
+        // cout << "here\n";
         fuseSensorData();
-
+        execute(W);
+        // cout << "mabye\n";
+        W->print_world();
         completed_readings.clear();
+
+        if (CarPosition == final_destination) done = true;
     }
 
-
-
-
     //ignore
-    void set_symbol() {symbol = '@';}
+    void set_symbol() {symbol = '@'; return;}
+    bool get_done() {return done;}
 };
 
 

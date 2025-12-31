@@ -26,10 +26,20 @@ public:
 
         return *this;
     }
+    Vector2 operator+(const Vector2& Vector_Given) {
+        this->X += Vector_Given.X;
+        this->Y += Vector_Given.Y;
+        return *this;
+    }
     Vector2 operator-(const Vector2& Vector_Given) {
         this->X = this->X - Vector_Given.X;
         this->Y = this->Y - Vector_Given.Y;
         
+        return *this;
+    }
+    Vector2 operator-(const int& n) {
+        this->X = this->X - n;
+        this->Y = this->Y - n;   
         return *this;
     }
     Vector2 operator*(const Vector2& Vector_Given) {
@@ -37,10 +47,28 @@ public:
         this->Y = this->Y*Vector_Given.Y;
         return *this;
     }
+    Vector2 operator*(const int& n) {
+        this->X = this->X*n;
+        this->Y = this->Y*n;
+        return *this;
+    }
     bool operator<(const int& n) {
         if (this->X < n || this->Y < n) return true; //edge case equals is impossible at least in theory :(
         else return false;
     }
+    bool operator>(const int& n) {
+        if (this->X > n || this->Y > n) return true; //edge case equals is impossible at least in theory :(
+        else return false;
+    }
+    bool operator>(const Vector2& V) {
+        if (this->X > V.X || this->Y > V.Y) return true; //edge case equals is impossible at least in theory :(
+        else return false;
+    }
+    bool operator==(const Vector2& V) {
+        if (this->X == V.X && this->Y == V.Y) return true;
+        else return false;
+    }
+    
     
     int getX() {return X;}
     int getY() {return Y;}

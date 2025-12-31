@@ -28,8 +28,9 @@ public:
     }
 
     virtual void set_symbol(char c) {symbol = c;}
-
-
+    void set_position(Vector2 V) {position = V;}
+    void set_ID(string s) {ID = s;}
+    virtual void set_speed(int n) {return;}
 
    
 
@@ -58,7 +59,28 @@ class MovingObject: public WorldObject {
     public:
     static string count;
     MovingObject(char ch, int x,int y)
-    :WorldObject(count, ch, x, y), /**CHECK, NOT READY **/ speed(HALF_SPEED), direction(1,0) {
+    :WorldObject(count, ch, x, y), /**CHECK, NOT READY **/ speed(HALF_SPEED) {
+        srand(time(NULL));
+        int num = rand() % 4;
+        switch(num) {
+            case 0:
+                direction.setX(1);
+                direction.setY(0);
+                break;
+            case 1:
+                direction.setX(-1);
+                direction.setY(0);
+                break;
+            case 2:
+                direction.setX(0);
+                direction.setY(1);
+                break;
+            case 3:
+                direction.setX(0);
+                direction.setY(-1);
+                break;
+        }
+
         if (count[count.size()-1]-'0' == 9) {
             count[count.size()-2]+=1;
             count[count.size()-1] = '0';
@@ -78,6 +100,8 @@ class MovingObject: public WorldObject {
     virtual void print_object() {
         WorldObject::print_object();
     }
+
+    void set_speed(int n) override {speed = n;}
 
     int get_speed() override {return speed;}
     Vector2 get_direction() override {return direction;}
@@ -250,7 +274,12 @@ public:
     void print_object() override {WorldObject::print_object();}
 
 };
+class CarReservation: public WorldObject {
 
+public:
+    CarReservation(int x, int y)
+    :WorldObject("-1", '@', x, y) {}
+};
 
 string MovingObject::count = "100";
 string StaticObject::count = "000";
