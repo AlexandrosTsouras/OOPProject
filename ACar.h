@@ -4,9 +4,9 @@
 
 using namespace std;
 
-vector<char> problems = {'S', 'P', '?'};
+vector<char> problems = {'S', 'P', '?', 'Y', 'R'};
 const Vector2 UP(0, -1);
-const Vector2 DOWN(0, -1);
+const Vector2 DOWN(0, 1);
 const Vector2 LEFT(-1,0);
 const Vector2 RIGHT(1,0);
 
@@ -88,12 +88,11 @@ public:
         else {topleft.setX(CarPosition.getX()-4);}
         if (CarPosition.getY()-4<=0) {topleft.setY(1);}
         else {topleft.setY(CarPosition.getY()-4);}
-        
         Vector2 bottomright;
         Vector2 GridSize = W->get_maxsize();
-        if (CarPosition.getX()+4<=0) {bottomright.setX(GridSize.getX()-1);}
+        if (CarPosition.getX()+4>=GridSize.getX()-1) {bottomright.setX(GridSize.getX()-2);}
         else {bottomright.setX(CarPosition.getX()+4);}
-        if (CarPosition.getY()+4<=0) {bottomright.setY(GridSize.getY()-1);}
+        if (CarPosition.getY()+4>=GridSize.getY()-1) {bottomright.setY(GridSize.getY()-2);}
         else {bottomright.setY(CarPosition.getY()+4);}
         
 
@@ -147,7 +146,7 @@ public:
         Vector2 topleft = CarPosition;
         Vector2 bottomright = CarPosition;
         if (CarDirection.getX() == 1 && CarDirection.getY() == 0) { // right
-            if (CarPosition.getX()+12 >= W->get_maxsize().getX()) {bottomright.setX(W->get_maxsize().getX()-1);}
+            if (CarPosition.getX()+12 >= W->get_maxsize().getX()-1) {bottomright.setX(W->get_maxsize().getX()-2);}
             else {bottomright.setX(CarPosition.getX()+12);}
         }
         if (CarDirection.getX() == -1 && CarDirection.getY() == 0) { // left
@@ -155,18 +154,21 @@ public:
             else {topleft.setX(CarPosition.getX()-12);}
         }
         if (CarDirection.getX() == 0 && CarDirection.getY() == 1) { // down
-            if (CarPosition.getY()+12 >= W->get_maxsize().getY()) {bottomright.setY(W->get_maxsize().getY()-1);}
+            if (CarPosition.getY()+12 >= W->get_maxsize().getY()-1) {bottomright.setY(W->get_maxsize().getY()-2);}
             else {bottomright.setY(CarPosition.getY()+12);}
         }
         if (CarDirection.getX() == 0 && CarDirection.getY() == -1) { // up
             if (CarPosition.getY()-12 <=0) {topleft.setX(1);}
             else {topleft.setY(CarPosition.getY()-12);}
         }
-        
+        // cout << "topleft: (" << topleft.getX() << ", " << topleft.getY() << ")\n";
+        // cout << "bottomright: (" << bottomright.getX() << ", " << bottomright.getY() << ")\n";
+
         
         for (int i=topleft.getY(); i<=bottomright.getY(); i++) {
             // cout << "def not right?\n";
             for (int j=topleft.getX(); j<=bottomright.getX(); j++) {
+                // cout << "i: " << i << "\tj: " << j << endl;
                 if (i == CarPosition.getY() && j == CarPosition.getX()) continue;
                 // cout << "mayhaps?\n";
                 WorldObject* WO = W->get_WObject(i,j);
@@ -192,8 +194,9 @@ public:
                 newSense.set_ID(WO->get_ID());
 
                 //push
-                // cout << "perhaps\n";
+                
                 Readings.push_back(newSense);
+                cout << "perhaps\n";
                 // cout << "Nuh uh\n";
                 
             }
@@ -236,7 +239,7 @@ public:
             //width
             topleft.setX(carX+1);
             if (carX+8>=W->get_maxsize().getX()-1) {
-                bottomright.setX(W->get_maxsize().getX());
+                bottomright.setX(W->get_maxsize().getX()-2);
             }
             else {
                 bottomright.setX(carX+8);
@@ -245,8 +248,8 @@ public:
             if (carY-3 <= 0) {
                 topleft.setY(1);
             } else {topleft.setY(carY-3);}
-            if (carY+3 >= W->get_maxsize().getY()) {
-                bottomright.setY(W->get_maxsize().getY()-1);
+            if (carY+3 >= W->get_maxsize().getY()-1) {
+                bottomright.setY(W->get_maxsize().getY()-2);
             } else {bottomright.setY(carY+3);}
         }
 
@@ -261,8 +264,8 @@ public:
             if (carY-3 <= 0) {
                 topleft.setY(1);
             } else {topleft.setY(carY-3);}
-            if (carY+3 >= W->get_maxsize().getY()) {
-                bottomright.setY(W->get_maxsize().getY()-1);
+            if (carY+3 >= W->get_maxsize().getY()-1) {
+                bottomright.setY(W->get_maxsize().getY()-2);
             } else {bottomright.setY(carY+3);}
             
 
@@ -272,15 +275,15 @@ public:
             if (carY == W->get_maxsize().getY()-1) return;
             //height
             topleft.setY(carY+1);
-            if (carY+8>=W->get_maxsize().getY()) {
-                bottomright.setY(W->get_maxsize().getY()-1);
+            if (carY+8>=W->get_maxsize().getY()-1) {
+                bottomright.setY(W->get_maxsize().getY()-2);
             } else {bottomright.setY(carY+8);}
             //width
             if (carX-3<=0) {
                 topleft.setX(1);
             } else {topleft.setX(carX-3);}
-            if (carX+3>=W->get_maxsize().getX()) {
-                bottomright.setX(W->get_maxsize().getX()-1);
+            if (carX+3>=W->get_maxsize().getX()-1) {
+                bottomright.setX(W->get_maxsize().getX()-2);
             } else {bottomright.setX(carX+3);}
         }
 
@@ -295,8 +298,8 @@ public:
             if (carX-3<=0) {
                 topleft.setX(1);
             } else {topleft.setX(carX-3);}
-            if (carX+3>=W->get_maxsize().getX()) {
-                bottomright.setX(W->get_maxsize().getX()-1);
+            if (carX+3>=W->get_maxsize().getX()-1) {
+                bottomright.setX(W->get_maxsize().getX()-2);
             } else {bottomright.setX(carX+3);}
         }
 
@@ -351,10 +354,6 @@ public:
 };
 
 
-// class NavigationSystem {
-
-// };
-
 
 class AutomaticCar: public WorldObject {    //ACar
 
@@ -371,20 +370,28 @@ class AutomaticCar: public WorldObject {    //ACar
     static char symbol;
     Vector2 final_destination;
     bool done;
+
 public:
 
-    AutomaticCar(World* W)
+
+    void print() {
+        cout << "Position: (" << CarPosition.getX() << ", " << CarPosition.getY() << ")\n";
+        cout << "Direction: (" << CarDirection.getX() << ", " << CarDirection.getY() << ")\n";
+        cout << "Speed: " << speed << endl;
+    }
+
+    AutomaticCar(World* W, Vector2 D)
     :WorldObject("-1", '@', 0, 0) {
-        this->speed = FULL_SPEED;
+        this->final_destination = D;
+        this->speed = HALF_SPEED;
         done = false;
         for (int i = 1; i<W->get_maxsize().getY()-1; i++) {
             for (int j=1; j<W->get_maxsize().getX()-1; j++) {
                 if (W->get_thing(j, i)->get_ID() == "-1") {
                     CarPosition.setX(j);
                     CarPosition.setY(i);
-                    CarDirection = RIGHT;
-                    final_destination.setX(5);
-                    final_destination.setY(5);
+                    if (j < final_destination.getX()) CarDirection = RIGHT;
+                    else CarDirection = LEFT;
 
                     this->set_position(CarPosition);
                     W->set_thing(this, j, i);
@@ -397,54 +404,46 @@ public:
     }
 
     void accelerate() {
-        if (speed == FULL_SPEED) return;
+        if (speed >= FULL_SPEED) {speed = FULL_SPEED; return;} 
         speed++;
         return;}
     void decelerate() {
-        if (speed == STOPPED) return;
+        if (speed <=STOPPED) {speed = STOPPED; return;}
         speed--;
         return;}
     void turn(string turn = "NaN") {
         if (CarDirection.getX() == 1) {
             if (turn == "left"){
-                CarDirection.setX(0);
-                CarDirection.setY(-1);
+                CarDirection = UP;
             }
-            if (turn == "right") {
-                CarDirection.setX(0);
-                CarDirection.setY(1);   
+            else if (turn == "right") {
+                CarDirection = DOWN;   
             }
         }
-        if (CarDirection.getX() == -1) {
+        else if (CarDirection.getX() == -1) {
             if (turn == "left") {
-                    CarDirection.setX(0);
-                    CarDirection.setY(1);
+                    CarDirection = DOWN;
                 }
-            if (turn == "right") {
-                    CarDirection.setX(0);
-                    CarDirection.setY(-1);
+            else if (turn == "right") {
+                    CarDirection = UP;
                 }
             
         }
-        if (CarDirection.getY() == 1) {
+        else if (CarDirection.getY() == 1) {
                 if (turn == "left") {
-                    CarDirection.setX(1);
-                    CarDirection.setY(0);
+                    CarDirection = RIGHT;
                     }
-                if (turn == "right"){
-                    CarDirection.setX(-1);
-                    CarDirection.setY(0);
+                else if (turn == "right"){
+                    CarDirection = LEFT;
                     }
             
         }
-        if (CarDirection.getY() == -1) {
+        else if (CarDirection.getY() == -1) {
             if (turn == "left"){
-                    CarDirection.setX(-1);
-                    CarDirection.setY(0);
+                    CarDirection = LEFT;
                     }
-            if (turn == "right"){
-                    CarDirection.setX(1);
-                    CarDirection.setY(0);
+            else if (turn == "right"){
+                    CarDirection = RIGHT;
                     }
 
         }
@@ -452,6 +451,23 @@ public:
         return;}
     //
     void turn(Vector2 V) {
+
+
+        if (CarPosition.getX() == final_destination.getX()) {
+            if (CarPosition.getY() < final_destination.getY()) {
+                CarDirection = DOWN;
+            }
+            else {CarDirection = UP;}
+            return;
+        }
+        else if (CarPosition.getY() == final_destination.getY()) {
+            if (CarPosition.getX() < final_destination.getX()) {
+                CarDirection = RIGHT;
+            }
+            else {CarDirection = LEFT;}
+            return;
+        }
+
         if (CarDirection == RIGHT) {
             if (CarPosition.getY() < V.getY()) {
                 turn("right");
@@ -480,10 +496,11 @@ public:
             if (CarPosition.getY() < pos.getY()) CarDirection = DOWN;
             else CarDirection = UP;
         }
-        if (CarPosition.getY() == pos.getY()) {
+        else if (CarPosition.getY() == pos.getY()) {
             if (CarPosition.getX() < pos.getX()) CarDirection = RIGHT;
             else CarDirection = LEFT;
-        }}
+        }
+    }
     //
     
     
@@ -542,70 +559,153 @@ public:
         // }
     }
     
+
+    bool force(Vector2 W_maxsize) {
+        
+        bool decelerated = false;
+        bool forced = false;
+        
+        vector<SensorReading>::iterator it;
+        for (it = completed_readings.begin(); it != completed_readings.end(); ++it) {
+            //traffic lights
+            if ((it->get_TLC() == 'Y' || it->get_TLC() == 'R') && in_front(CarPosition, CarDirection, it->get_position()) && d(CarPosition, it->get_position()) < 6) {
+                if (speed == FULL_SPEED) {decelerate(); decelerated = true; forced = true;
+                cout << "forced for light\n";
+                }
+            }
+            if (it->get_TLC() == 'Y' || it->get_TLC() == 'R' && right_in_front(CarPosition, CarDirection, it->get_position()))
+            {
+                decelerate();
+                decelerated = true;
+                forced = true;
+            }
+
+            //parked vechile
+            if (it->get_TLC() == 'X' && it->get_signText() == "EMPTY" && right_in_front(CarPosition,CarDirection, it->get_position())) {
+                decelerate();
+                decelerated = true;
+            }
+            if (it->get_TLC() == 'X' && it->get_signText() == "EMPTY" && right_in_front(CarPosition,CarDirection, it->get_position())) {
+                speed = STOPPED;
+                decelerated = true;
+                //edge cases
+                if (CarPosition.getX() == 1) {if (CarDirection == UP) {turn("right");} else {turn("left");}}
+                else if (CarPosition.getX() == W_maxsize.getX()-1) {if (CarDirection == UP) turn("left"); else {turn("right");}}
+                else if (CarPosition.getY() == 1) {if (CarDirection == RIGHT) {turn("right");} else {turn("left");}}
+                else if (CarPosition.getX() == W_maxsize.getY()-1) {if (CarDirection == RIGHT) turn("left"); else {turn("right");}}
+                else {turn("right"); cout << "turnt right for the right reasons\n";}
+                forced = true;
+                cout << "forced for parked\n";
+            }
+
+            //moving things close
+            if (it->get_ID()[0] == '1') {
+                Vector2 topleft;
+                Vector2 bottomright;
+                //setX
+                if (CarDirection == UP || CarDirection == DOWN) {
+                    if (CarPosition.getX() == 1) {topleft.setX(1); bottomright.setX(CarPosition.getX()+1);}
+                    else if (CarPosition.getX() == W_maxsize.getX()-2) {topleft.setX(CarPosition.getX()-1); bottomright.setX(W_maxsize.getX()-2);}
+                    else {topleft.setX(CarPosition.getX()-1); bottomright.setX(CarPosition.getX()+1);}
+                }
+                else if (CarDirection == RIGHT) {
+                    if (CarPosition.getX() == W_maxsize.getX()-2) {topleft.setX(-1); bottomright.setX(-2);}
+                    else if (CarPosition.getX() == W_maxsize.getX()-3) {topleft.setX(W_maxsize.getX()-2); bottomright.setX(W_maxsize.getX()-2);}
+                    else {topleft.setX(CarPosition.getX()+1); bottomright.setX(CarPosition.getX()+2);}
+                }
+                else if (CarDirection == LEFT) {
+                    if (CarPosition.getX() == 1) {topleft.setX(-1); bottomright.setX(-2);}
+                    else if (CarPosition.getX() == 2) {topleft.setX(1); bottomright.setX(1);}
+                    else {topleft.setX(CarPosition.getX()-2); bottomright.setX(CarPosition.getX()-1);}
+                }
+                //setY
+                if (CarDirection == RIGHT || CarDirection == LEFT) {
+                    if (CarPosition.getY() == 1) {topleft.setY(1); bottomright.setY(2);}
+                    else if (CarPosition.getY() == W_maxsize.getY()-2) {topleft.setY(W_maxsize.getY()-3); bottomright.setY(W_maxsize.getY()-2);}
+                    else {topleft.setY(CarPosition.getY()-1); bottomright.setY(CarPosition.getY()+1);}
+                }
+                else if (CarDirection == UP) {
+                    if (CarPosition.getY() == 1) {topleft.setY(-1); bottomright.setY(-2);}
+                    else if (CarPosition.getY() == 2) {topleft.setY(1); bottomright.setY(1);}
+                    else {topleft.setY(CarPosition.getY()-2); bottomright.setY(CarPosition.getY()-1);}
+                }
+                else if (CarDirection == DOWN) {
+                    if (CarPosition.getY() == W_maxsize.getY()-2) {topleft.setY(-1); bottomright.setY(-2);}
+                    else if (CarPosition.getY() == W_maxsize.getY()-3) {topleft.setY(W_maxsize.getY()-2); bottomright.setY(W_maxsize.getY()-2);}
+                    else {topleft.setY(CarPosition.getY()+2); bottomright.setY(CarPosition.getY()+1);}
+                }
+                cout << "DIR: ";
+                CarDirection.print_info();
+                cout << "\nfrom:";
+                topleft.print_info();
+                cout << " to: ";
+                bottomright.print_info();
+                cout << within(it->get_position(), topleft, bottomright) << endl; 
+                if (within(it->get_position(), topleft, bottomright)) {
+                    // decelerate();
+                    speed = STOPPED;
+                    decelerated = true;
+                    forced = true;
+                    cout << "decelerated for Car/Bike\n";
+                }
+            }
+
+            //close to gps location whtatever
+            if (d(CarPosition, final_destination)<6 && !forced) {speed = HALF_SPEED; forced = true; turn(final_destination);
+            cout << "forced for close\n";}
+
+        }
+        return forced;
+    }
+
+
     void execute(World* W) {
         
-        //GPS close thing whatever
-        bool decelerated = false;
-        //first execute speed thing
-        vector<SensorReading>::iterator it;
-        for (it=completed_readings.begin(); it != completed_readings.end(); ++it) {
-            //traffic light check
-            if ((it->get_TLC() == 'Y' || it->get_TLC() == 'R' ) && in_front(CarPosition, CarDirection, it->get_position())) {
-                decelerate();
-                decelerated = true;
-            }
-
-            //moving object nearby
-            if (it->get_ID()[0] == '1' && d(CarPosition, it->get_position())<3 /*somethng something*/ && !decelerated) {
-                decelerate();
-                decelerated = true;
-            }
+        
+        bool forced = force(W->get_maxsize());
+        if (!forced) {
+            turn(final_destination);
+            accelerate();
+        } else {cout << "forced something\n";}
+        // cout << "X: " << CarPosition.getX()+CarDirection.getX()*speed << "Y: " << CarPosition.getY()+CarDirection.getY()*speed << endl;
+        WorldObject* newroad = new Road(CarPosition.getX(), CarPosition.getY());
+        // cout << "CarDir: " << CarDirection.getX() << ", " << CarDirection.getY() << endl;
+        int newCX = CarPosition.getX()+CarDirection.getX()*speed;
+        int newCY = CarPosition.getY()+CarDirection.getY()*speed;
+        // cout << "newC: (" << newCX << ", " << newCY << ")\n"; 
+        if (newCX >= W->get_maxsize().getX()-1 || newCY >= W->get_maxsize().getY()-1) {
+            // cout << "Do you come in here?\n";
+            turn(final_destination);
+            newCX = CarPosition.getX()+CarDirection.getX()*speed;
+            newCY = CarPosition.getY()+CarDirection.getY()*speed;
+            // cout << "newpos: (" << newCX << ", " << newCY << ")\n"; 
             
-            if (d(CarPosition, it->get_position()) == 1 && in_front(CarPosition, CarDirection, it->get_position())) {
-                turn(final_destination);
-            }
-
         }
-        if (d(CarDirection, final_destination)<=5 && in_front(CarPosition, CarDirection, final_destination) && !decelerated) decelerate();
-
-        
-        if (!decelerated) accelerate();
-        //it turns if:
-        //  • It's in the same X/Y location as the final destination
-        //  • There's a Stop sign in front of it
-        //Lowkey I think that's it, in my defense I have 0 driving experience, I've barely ridden a bike
-
-        int carX = CarPosition.getX();
-        int carY = CarPosition.getY();
-        int finalX = final_destination.getX();
-        int finalY = final_destination.getY();
-
-
-        if (carX == finalX || carY == finalY) {
-            turn_to(final_destination);
-            return;
-        }
-        
-        WorldObject* newthing = new Road(CarPosition.getX(), CarPosition.getY());
-        W->set_thing(newthing, CarPosition.getX(), CarPosition.getY());
-        cout << "X: " << carX+CarDirection.getX()*speed << "\nY: " << carY+CarDirection.getY()*speed << endl;
-        W->set_thing(this, carX+CarDirection.getX()*speed, carY+CarDirection.getY()*speed);
-
+        CarPosition.setX(newCX);
+        CarPosition.setY(newCY);
+        set_position(CarPosition);
+        // cout << "X: " << CarPosition.getX()+CarDirection.getX()*speed << "\nY: " << CarPosition.getY()+CarDirection.getY()*speed << endl;
+        W->set_thing(newroad, newroad->get_position().getX(), newroad->get_position().getY());
+        W->set_thing(this, CarPosition.getX(), CarPosition.getY());
     }
 
     //imagine that the 3 Sensors have done their little update thing to get readings
     void Full_Update(World* W) {
         //assume random world
+        // cout << "A\n";
+        cout << endl << endl << endl;
         W->Update();
+        // cout << "huh???\n";
         LS.get_Readings(CarPosition, W);
         RS.get_Readings(CarPosition, CarDirection, W);
+        // cout << "I am confusion\n";
         CS.get_Readings(CarPosition, CarDirection, W);
         // cout << "here\n";
         fuseSensorData();
         execute(W);
-        // cout << "mabye\n";
         W->print_world();
         completed_readings.clear();
+        // print();
 
         if (CarPosition == final_destination) done = true;
     }
@@ -615,5 +715,3 @@ public:
     bool get_done() {return done;}
 };
 
-
-// AutomaticCar::set_symbol();

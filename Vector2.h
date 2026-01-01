@@ -97,5 +97,16 @@ int d(Vector2 V1, Vector2 V2) {
 bool in_front(Vector2 pos1, Vector2 dir, Vector2 pos2) {
     if (pos1.getX() != pos2.getX() && pos1.getY() != pos2.getY()) return false;
     Vector2 temp = (pos1-pos2)*dir;
+    cout << "temp:" << temp.getX() << ',' << temp.getY() << endl;
     return temp<0;
+}
+
+bool right_in_front(Vector2 pos1, Vector2 dir, Vector2 pos2) {
+    return (in_front(pos1, dir, pos2) && d(pos1,pos2) == 1);
+}
+
+bool within(Vector2 V, Vector2 lim1, Vector2 lim2) {
+    bool rX = V.getX() >= lim1.getX() && V.getX() <= lim2.getX();
+    bool rY = V.getY() >= lim1.getY() && V.getY() <= lim2.getY();
+    return (rX && rY);
 }

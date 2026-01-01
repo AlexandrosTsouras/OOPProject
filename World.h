@@ -164,25 +164,31 @@ public:
             Vector2 move_to = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed(); 
             // cout << "World Info:\n\tMaxSize: (" << max_size.getX() << ", " << max_size.getY() << ")\n"; 
             Vector2 max_size_copy = max_size;
-            if (move_to < 1 || move_to > (max_size_copy-1)) {
+            max_size_copy = max_size_copy-2;
+            if (move_to < 1 || move_to > max_size_copy) {
                 (*it)->set_speed(0);
             }
             Vector2 new_pos = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed();
             WorldObject* new_thing = new Road((*it)->get_position().getX(), (*it)->get_position().getY());
             set_thing(new_thing, (*it)->get_position());
+            (*it)->set_position(new_pos);
             set_thing(*it, new_pos);
         }
         for (it = MBikes.begin(); it!=MBikes.end(); ++it) {
             Vector2 move_to = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed(); 
             Vector2 max_size_copy = max_size;
-            if (move_to < 1 || move_to > (max_size_copy-1)) {
+            max_size_copy = max_size_copy-2;
+            if (move_to < 1 || move_to > max_size_copy) {
                 (*it)->set_speed(0);
             }
+            // cout << "no way\n";
             Vector2 new_pos = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed();
             WorldObject* new_thing = new Road((*it)->get_position().getX(), (*it)->get_position().getY());
             set_thing(new_thing, (*it)->get_position());
+            (*it)->set_position(new_pos);
             set_thing(*it, new_pos);
         }
+        // cout << "done here??\n";
         // cout << "ουπδατε\n";
     }
 

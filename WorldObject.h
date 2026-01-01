@@ -5,9 +5,10 @@
 #include <cstdlib>
 
 using namespace std;
-#define STOPPED 0
-#define HALF_SPEED 1
-#define FULL_SPEED 2 
+
+const int STOPPED = 0;
+const int HALF_SPEED = 1;
+const int FULL_SPEED = 2;
 
 
 class WorldObject {
@@ -59,7 +60,7 @@ class MovingObject: public WorldObject {
     public:
     static string count;
     MovingObject(char ch, int x,int y)
-    :WorldObject(count, ch, x, y), /**CHECK, NOT READY **/ speed(HALF_SPEED) {
+    :WorldObject(count, ch, x, y), speed(HALF_SPEED) {
         srand(time(NULL));
         int num = rand() % 4;
         switch(num) {
