@@ -169,10 +169,13 @@ public:
                 (*it)->set_speed(0);
             }
             Vector2 new_pos = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed();
-            WorldObject* new_thing = new Road((*it)->get_position().getX(), (*it)->get_position().getY());
-            set_thing(new_thing, (*it)->get_position());
+            WorldObject* newthing = this->get_thing(new_pos.getX(), new_pos.getY());
+            set_thing((*it)->get_replace(), (*it)->get_position());
             (*it)->set_position(new_pos);
             set_thing(*it, new_pos);
+
+            (*it)->set_replace(newthing);
+
         }
         for (it = MBikes.begin(); it!=MBikes.end(); ++it) {
             Vector2 move_to = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed(); 
@@ -183,10 +186,12 @@ public:
             }
             // cout << "no way\n";
             Vector2 new_pos = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed();
-            WorldObject* new_thing = new Road((*it)->get_position().getX(), (*it)->get_position().getY());
-            set_thing(new_thing, (*it)->get_position());
+            WorldObject* newthing = this->get_thing(new_pos.getX(), new_pos.getY());
+            set_thing((*it)->get_replace(), (*it)->get_position());
             (*it)->set_position(new_pos);
             set_thing(*it, new_pos);
+            (*it)->set_replace(newthing);
+
         }
         // cout << "done here??\n";
         // cout << "ουπδατε\n";

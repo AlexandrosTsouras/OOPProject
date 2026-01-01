@@ -14,53 +14,63 @@ const int FULL_SPEED = 2;
 class WorldObject {
     string ID;
     char symbol;
-protected:
+    protected:
     Vector2 position;
-public:
+    public:
     WorldObject(string id, char s, int x, int y)
     :ID(id), symbol(s), position(x,y) {}
-
+    
     virtual void print_object() {
         cout << symbol;
     }
-
+    
     virtual void print_info() {
         cout << "\tID:" << ID << "\n\tPosition: (" << position.getX() << ", " << position.getY() << ")\n";
     }
-
+    
     virtual void set_symbol(char c) {symbol = c;}
     void set_position(Vector2 V) {position = V;}
     void set_ID(string s) {ID = s;}
     virtual void set_speed(int n) {return;}
-
-   
-
+    virtual void set_replace(WorldObject* N) {return;}    
+    
+    
     //GETS
     char get_symbol() {return symbol;}
     string get_ID() {return ID;}
     Vector2 get_position() {return position;}
-
+    
     //for moving object
     virtual int get_speed() {return -1;}
     virtual Vector2 get_direction() {Vector2 empty(-2); return empty;}
+    virtual WorldObject* get_replace() {WorldObject* N = new WorldObject("-1", '-', -1,-1);return N;}
     //for everything else
     virtual string get_signText() {return "EMPTY";}
     virtual char get_TLC() {return 'X';} //we love alt code
-
-
     //not sure
     WorldObject* get_Object(WorldObject* W) {
         return W;
     }
 };
+class Road: public WorldObject {
+public:
+    Road(int x, int y)
+    :WorldObject("0", '.', x, y) {}
+
+    void print_object() override {WorldObject::print_object();}
+
+};
 
 class MovingObject: public WorldObject {
     Vector2 direction;
     int speed;
+    
     public:
+    WorldObject* replace_with_this;
     static string count;
     MovingObject(char ch, int x,int y)
     :WorldObject(count, ch, x, y), speed(HALF_SPEED) {
+        replace_with_this = new Road(x, y);
         srand(time(NULL));
         int num = rand() % 4;
         switch(num) {
@@ -103,7 +113,9 @@ class MovingObject: public WorldObject {
     }
 
     void set_speed(int n) override {speed = n;}
+    void set_replace(WorldObject* N) override {replace_with_this = N;}
 
+    WorldObject* get_replace() override {return replace_with_this;}
     int get_speed() override {return speed;}
     Vector2 get_direction() override {return direction;}
 };
@@ -267,14 +279,6 @@ public:
 
 };
 
-class Road: public WorldObject {
-public:
-    Road(int x, int y)
-    :WorldObject("0", '.', x, y) {}
-
-    void print_object() override {WorldObject::print_object();}
-
-};
 class CarReservation: public WorldObject {
 
 public:

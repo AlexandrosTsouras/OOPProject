@@ -371,6 +371,8 @@ class AutomaticCar: public WorldObject {    //ACar
     Vector2 final_destination;
     bool done;
 
+    WorldObject* replace_with_this;
+
 public:
 
 
@@ -392,14 +394,15 @@ public:
                     CarPosition.setY(i);
                     if (j < final_destination.getX()) CarDirection = RIGHT;
                     else CarDirection = LEFT;
-
+                    
                     this->set_position(CarPosition);
                     W->set_thing(this, j, i);
+                    break;
                 }
             }
         }
-
-
+        WorldObject* newroad = new Road(CarPosition.getX(), CarPosition.getY());
+        replace_with_this = newroad;
 
     }
 
@@ -651,10 +654,11 @@ public:
             }
 
             //close to gps location whtatever
-            if (d(CarPosition, final_destination)<6 && !forced) {speed = HALF_SPEED; forced = true; turn(final_destination);
+            if (d(CarPosition, final_destination)<6 && !forced) {speed = HALF_SPEED; forced = true; turn(final_destination); decelerated = true;
             cout << "forced for close\n";}
 
         }
+        if (!decelerated) accelerate();
         return forced;
     }
 
@@ -665,10 +669,7 @@ public:
         bool forced = force(W->get_maxsize());
         if (!forced) {
             turn(final_destination);
-            accelerate();
         } else {cout << "forced something\n";}
-        // cout << "X: " << CarPosition.getX()+CarDirection.getX()*speed << "Y: " << CarPosition.getY()+CarDirection.getY()*speed << endl;
-        WorldObject* newroad = new Road(CarPosition.getX(), CarPosition.getY());
         // cout << "CarDir: " << CarDirection.getX() << ", " << CarDirection.getY() << endl;
         int newCX = CarPosition.getX()+CarDirection.getX()*speed;
         int newCY = CarPosition.getY()+CarDirection.getY()*speed;
@@ -681,12 +682,14 @@ public:
             // cout << "newpos: (" << newCX << ", " << newCY << ")\n"; 
             
         }
+        WorldObject* newthing = W->get_thing(newCX, newCY);
         CarPosition.setX(newCX);
         CarPosition.setY(newCY);
         set_position(CarPosition);
         // cout << "X: " << CarPosition.getX()+CarDirection.getX()*speed << "\nY: " << CarPosition.getY()+CarDirection.getY()*speed << endl;
-        W->set_thing(newroad, newroad->get_position().getX(), newroad->get_position().getY());
+        W->set_thing(replace_with_this, replace_with_this->get_position().getX(), replace_with_this->get_position().getY());
         W->set_thing(this, CarPosition.getX(), CarPosition.getY());
+        replace_with_this = newthing;
     }
 
     //imagine that the 3 Sensors have done their little update thing to get readings
@@ -705,6 +708,7 @@ public:
         execute(W);
         W->print_world();
         completed_readings.clear();
+        // cout << "reaings empty: " << completed_readings.empty() << endl;
         // print();
 
         if (CarPosition == final_destination) done = true;
