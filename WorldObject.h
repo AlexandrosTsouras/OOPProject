@@ -20,6 +20,8 @@ class WorldObject {
     WorldObject(string id, char s, int x, int y)
     :ID(id), symbol(s), position(x,y) {}
     
+    ~WorldObject() {}
+
     virtual void print_object() {
         cout << symbol;
     }
@@ -45,6 +47,7 @@ class WorldObject {
     virtual Vector2 get_direction() {Vector2 empty(-2); return empty;}
     virtual WorldObject* get_replace() {WorldObject* N = new WorldObject("-1", '-', -1,-1);return N;}
     //for everything else
+    virtual void update_traffic_light() {};
     virtual string get_signText() {return "EMPTY";}
     virtual char get_TLC() {return 'X';} //we love alt code
     //not sure
@@ -64,9 +67,9 @@ public:
 class MovingObject: public WorldObject {
     Vector2 direction;
     int speed;
+    WorldObject* replace_with_this;
     
     public:
-    WorldObject* replace_with_this;
     static string count;
     MovingObject(char ch, int x,int y)
     :WorldObject(count, ch, x, y), speed(HALF_SPEED) {
@@ -125,6 +128,7 @@ class MovingObject: public WorldObject {
                 MovingCar(int x, int y) 
                 :MovingObject('C', x, y) {}
 
+
                 void print_info() override {
                     cout << "Moving Car" << endl;
                     MovingObject::print_info();
@@ -169,7 +173,7 @@ class StaticObject: public WorldObject {
         virtual void print_info() {
             WorldObject::print_info();
         }
-
+        virtual void update_traffic_light() {}
         void set_symbol(char c) override {WorldObject::set_symbol(c);}
 
         virtual void print_object() {WorldObject::print_object();}
@@ -246,21 +250,24 @@ class StaticObject: public WorldObject {
                 cout << endl;
             }
         
-            void update_traffic_light() {
+            void update_traffic_light() override {
+                ticks_passed++;
                 if (WorldObject::get_symbol() == 'R' && ticks_passed==4) {
                     StaticObject::set_symbol('G');
+                    ticks_passed = 0;
                     return;
                 }
                 if (WorldObject::get_symbol() == 'Y' && ticks_passed==2) {
                     StaticObject::set_symbol('R');
+                    ticks_passed = 0;
                     return;
                 }
                 if (WorldObject::get_symbol() == 'G' && ticks_passed==8) {
                     StaticObject::set_symbol('Y');
+                    ticks_passed = 0;
                     return;
                 }
             }
-
 
             void print_object() override {StaticObject::print_object();}
 

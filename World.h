@@ -6,12 +6,12 @@
 
 using namespace std;
 
-#define DEAFULT_SIZE_X 20
-#define DEAFULT_SIZE_Y 20
-#define DEAFULT_COUNT_MCAR 4
-#define DEAFULT_COUNT_MBIKE 2
-#define DEAFULT_COUNT_STOP 6
-#define DEAFULT_COUNT_PVECHILES 5
+#define DEAFULT_SIZE_X 40
+#define DEAFULT_SIZE_Y 40
+#define DEAFULT_COUNT_MCAR 3
+#define DEAFULT_COUNT_MBIKE 4
+#define DEAFULT_COUNT_STOP 5
+#define DEAFULT_COUNT_PVECHILES 2
 #define DEAFULT_COUNT_TRAFFICLIGHTS 10
 
 
@@ -39,14 +39,13 @@ public:
 
     World(int maxX = DEAFULT_SIZE_X, int maxY = DEAFULT_SIZE_Y, int mcar_max = DEAFULT_COUNT_MCAR,
           int mbike_max = DEAFULT_COUNT_MBIKE, int stop_max = DEAFULT_COUNT_STOP, int parked_max = DEAFULT_COUNT_PVECHILES,
-          int traffic_lights_max = DEAFULT_COUNT_TRAFFICLIGHTS, int s = 0) 
-    {
+          int traffic_lights_max = DEAFULT_COUNT_TRAFFICLIGHTS, int s = 0) {
         max_size.setX(maxX);
         max_size.setY(maxY);
         
         //world generation        
 
-        srand(time(NULL));
+        srand(s);
         bool done;
         Grid.reserve(max_size.getY());
 
@@ -118,7 +117,30 @@ public:
         }
    
     }
+    ~World() {
+        vector<WorldObject*>::iterator it;
+        for (it = MCars.begin(); it !=MCars.end(); ++it) {
+            delete (*it);
+        }
+        for (it = MBikes.begin(); it !=MBikes.end(); ++it) {
+            delete (*it);
+        }
+        for (it = SSTOPs.begin(); it !=SSTOPs.end(); ++it) {
+            delete (*it);
+        }
+        for (it = SParkedVechiles.begin(); it !=SParkedVechiles.end(); ++it) {
+            delete (*it);
+        }
+        for (it = STrafficLights.begin(); it !=STrafficLights.end(); ++it) {
+            delete (*it);
+        }
 
+        MCars.clear();
+        MBikes.clear();
+        SSTOPs.clear();
+        SParkedVechiles.clear();
+        STrafficLights.clear();
+    }
     
     void print_world() {
         
@@ -145,10 +167,10 @@ public:
 
 
     void set_thing(WorldObject* ptr, int x, int y) {
-        Grid[y][x] = ptr;
+        this->Grid[y][x] = ptr;
     }
     void set_thing(WorldObject* ptr, Vector2 V) {
-        Grid[V.getY()][V.getX()] = ptr;
+        this->Grid[V.getY()][V.getX()] = ptr;
     }
 
     WorldObject* get_thing(int x, int y) {
@@ -160,38 +182,71 @@ public:
 
     void Update() {
         vector<WorldObject*>::iterator it;
+
+        for (it = STrafficLights.begin(); it!=STrafficLights.end(); ++it) {
+            (*it)->update_traffic_light();
+        }
+
+
+
+        int i = 0;
+        // cout << "where tho\n";
         for (it = MCars.begin(); it!=MCars.end(); ++it) {
+            // cout << "it: " << *it << endl;
+            // cout << "possibly\n";
             Vector2 move_to = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed(); 
             // cout << "World Info:\n\tMaxSize: (" << max_size.getX() << ", " << max_size.getY() << ")\n"; 
             Vector2 max_size_copy = max_size;
             max_size_copy = max_size_copy-2;
             if (move_to < 1 || move_to > max_size_copy) {
-                (*it)->set_speed(0);
+                // cout << "The problem is in replacement\n";
+                // cout << "old: " << MCars.size() << endl;
+                set_thing((*it)->get_replace(), (*it)->get_position());
+                // cout << "The problem is in erasement\n";
+                MCars.erase(MCars.begin()+i);
+                it--;
+                // cout << "neither\n";
+                continue;
+                // cout << "new: " << MCars.size();
             }
             Vector2 new_pos = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed();
             WorldObject* newthing = this->get_thing(new_pos.getX(), new_pos.getY());
             set_thing((*it)->get_replace(), (*it)->get_position());
             (*it)->set_position(new_pos);
             set_thing(*it, new_pos);
-
+            if (newthing->get_symbol() == '@') newthing = new Road(newthing->get_position().getX(), newthing->get_position().getY());
             (*it)->set_replace(newthing);
 
+
+            i++;
         }
+        i = 0;
+        // cout << "outside\n";
         for (it = MBikes.begin(); it!=MBikes.end(); ++it) {
+            // cout << "did you even get here?\n";
             Vector2 move_to = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed(); 
             Vector2 max_size_copy = max_size;
             max_size_copy = max_size_copy-2;
             if (move_to < 1 || move_to > max_size_copy) {
-                (*it)->set_speed(0);
+                // cout << "The problem is in replacement\n";
+                set_thing((*it)->get_replace(), (*it)->get_position());
+                // cout << "The problem is in erasing\n";
+                MBikes.erase(MBikes.begin()+i);
+                it--;
+                // cout << "neither\n";
+                continue;
             }
             // cout << "no way\n";
             Vector2 new_pos = (*it)->get_position()+(*it)->get_direction()*(*it)->get_speed();
+            // cout << "new and old same:"
             WorldObject* newthing = this->get_thing(new_pos.getX(), new_pos.getY());
             set_thing((*it)->get_replace(), (*it)->get_position());
             (*it)->set_position(new_pos);
             set_thing(*it, new_pos);
+            if (newthing->get_symbol() == '@') newthing = new Road(newthing->get_position().getX(), newthing->get_position().getY());
             (*it)->set_replace(newthing);
 
+            i++;
         }
         // cout << "done here??\n";
         // cout << "ουπδατε\n";

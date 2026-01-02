@@ -79,6 +79,14 @@ public:
 
     LidarSensor() {}
 
+    void clear_readings() {
+        Readings.clear();
+    }
+
+    ~LidarSensor() {
+        clear_readings();
+    }
+
     void get_Readings(Vector2 CarPosition, World* W) {
 
         //it checks 9x9 around it so I think
@@ -138,8 +146,13 @@ class RadarSensor {
 
 public:
     RadarSensor() {}
-
-
+    
+    void clear_readings() {
+        Readings.clear();
+    }
+    ~RadarSensor() {
+        clear_readings();
+    }
     void get_Readings(Vector2 CarPosition, Vector2 CarDirection, World* W) {
 
         //gotta get the direction of the car
@@ -222,7 +235,13 @@ class CameraSensor {
 public:
 
     CameraSensor() {}
+void clear_readings() {
+        Readings.clear();
+    }
 
+    ~CameraSensor() {
+        clear_readings();
+    }
     void get_Readings(Vector2 CarPosition, Vector2 CarDirection, World* W) {
 
         //7x7 in front so like
@@ -363,6 +382,9 @@ class AutomaticCar: public WorldObject {    //ACar
 
     vector<SensorReading> completed_readings;
 
+    //ignore
+    bool doit;
+    //
 
     int speed;
     Vector2 CarPosition;
@@ -384,8 +406,9 @@ public:
 
     AutomaticCar(World* W, Vector2 D)
     :WorldObject("-1", '@', 0, 0) {
-        this->final_destination = D;
-        this->speed = HALF_SPEED;
+        final_destination = D;
+        speed = HALF_SPEED;
+        doit = false;
         done = false;
         for (int i = 1; i<W->get_maxsize().getY()-1; i++) {
             for (int j=1; j<W->get_maxsize().getX()-1; j++) {
@@ -568,37 +591,72 @@ public:
         bool decelerated = false;
         bool forced = false;
         
+        turn(final_destination);
+
         vector<SensorReading>::iterator it;
-        for (it = completed_readings.begin(); it != completed_readings.end(); ++it) {
-            //traffic lights
-            if ((it->get_TLC() == 'Y' || it->get_TLC() == 'R') && in_front(CarPosition, CarDirection, it->get_position()) && d(CarPosition, it->get_position()) < 6) {
-                if (speed == FULL_SPEED) {decelerate(); decelerated = true; forced = true;
-                cout << "forced for light\n";
-                }
-            }
-            if (it->get_TLC() == 'Y' || it->get_TLC() == 'R' && right_in_front(CarPosition, CarDirection, it->get_position()))
-            {
-                decelerate();
+        for (it = completed_readings.begin(); it != completed_readings.end() && !forced; ++it) {
+
+            //Stop sigs
+            Vector2 temp = CarDirection;
+            temp = temp*speed;
+            if (it->get_signText() == "STOP" && right_in_front(CarPosition, CarDirection, it->get_position()) && speed!=STOPPED) {
+                // cout << "stopped for stop\n";
+                speed = STOPPED;
+                forced = true;
                 decelerated = true;
+            }
+            else if (it->get_signText() == "STOP" && right_in_front(CarPosition, CarDirection, it->get_position()) && speed==STOPPED) {
+                accelerate();
                 forced = true;
             }
 
-            //parked vechile
-            if (it->get_TLC() == 'X' && it->get_signText() == "EMPTY" && right_in_front(CarPosition,CarDirection, it->get_position())) {
-                decelerate();
-                decelerated = true;
-            }
-            if (it->get_TLC() == 'X' && it->get_signText() == "EMPTY" && right_in_front(CarPosition,CarDirection, it->get_position())) {
+
+            //traffic lights
+            if ((it->get_TLC() == 'Y' || it->get_TLC() == 'R') && right_in_front(CarPosition, CarDirection, it->get_position()) && speed != STOPPED)
+            {   
+                // cout << "\nright_in_front: " << right_in_front(CarPosition, CarDirection, it->get_position()) << endl;
                 speed = STOPPED;
                 decelerated = true;
+                forced = true;
+                // cout << "forced for light 2.0 at pos: ";
+                // Vector2 n = it->get_position();
+                // n.print_info();
+
+            }
+            else if ((it->get_TLC() == 'Y' || it->get_TLC() == 'R') && in_front(CarPosition, CarDirection, it->get_position()) && d(CarPosition, it->get_position()) < 6) {
+                if (speed == FULL_SPEED) {
+                    decelerate();
+                    decelerated = true;
+                    forced = true;
+                    // cout << "forced for light\n";
+                }
+            }
+            else if (it->get_TLC() == 'G' && (right_in_front(CarPosition, CarDirection, it->get_position()) || right_in_front(CarPosition, temp, it->get_position()))) {accelerate(); forced = true;}
+
+            //parked vechile
+            if (it->get_type() == "Static" && it->get_TLC() == 'X' && it->get_signText() == "EMPTY" && right_in_front(CarPosition,CarDirection, it->get_position())) {
+                
+                if (speed == FULL_SPEED) {decelerate();
+                decelerated = true;}
+                // cout << "forced for parked\n";
                 //edge cases
                 if (CarPosition.getX() == 1) {if (CarDirection == UP) {turn("right");} else {turn("left");}}
                 else if (CarPosition.getX() == W_maxsize.getX()-1) {if (CarDirection == UP) turn("left"); else {turn("right");}}
                 else if (CarPosition.getY() == 1) {if (CarDirection == RIGHT) {turn("right");} else {turn("left");}}
                 else if (CarPosition.getX() == W_maxsize.getY()-1) {if (CarDirection == RIGHT) turn("left"); else {turn("right");}}
-                else {turn("right"); cout << "turnt right for the right reasons\n";}
+                //general case
+                else {turn("right");}
                 forced = true;
-                cout << "forced for parked\n";
+                doit = true;
+            }
+            if (it->get_type() == "Static" && it->get_TLC() == 'X' && it->get_signText() == "EMPTY" && is_diagonal(CarPosition, CarDirection)) {
+                if (doit) {
+                    turn("left");
+                    accelerate();
+                    forced = true;
+                    doit = false;
+
+                }
             }
 
             //moving things close
@@ -637,27 +695,38 @@ public:
                     else if (CarPosition.getY() == W_maxsize.getY()-3) {topleft.setY(W_maxsize.getY()-2); bottomright.setY(W_maxsize.getY()-2);}
                     else {topleft.setY(CarPosition.getY()+2); bottomright.setY(CarPosition.getY()+1);}
                 }
-                cout << "DIR: ";
-                CarDirection.print_info();
-                cout << "\nfrom:";
-                topleft.print_info();
-                cout << " to: ";
-                bottomright.print_info();
-                cout << within(it->get_position(), topleft, bottomright) << endl; 
+                // cout << "DIR: ";
+                // CarDirection.print_info();
+                // cout << "\nfrom:";
+                // topleft.print_info();
+                // cout << " to: ";
+                // bottomright.print_info();
+                // Vector2 n = it->get_position();
+                // n.print_info();
+                // cout << within(it->get_position(), topleft, bottomright) << endl; 
                 if (within(it->get_position(), topleft, bottomright)) {
                     // decelerate();
+
                     speed = STOPPED;
                     decelerated = true;
                     forced = true;
-                    cout << "decelerated for Car/Bike\n";
+                    // Vector2 n = it->get_position();
+                    // n.print_info();
+                    // cout << endl;
                 }
             }
 
-            //close to gps location whtatever
-            if (d(CarPosition, final_destination)<6 && !forced) {speed = HALF_SPEED; forced = true; turn(final_destination); decelerated = true;
-            cout << "forced for close\n";}
-
+            
         }
+        //close to gps location whtatever
+        if (d(CarPosition, final_destination)<6 && !forced) {speed = HALF_SPEED; forced = true; turn(final_destination); decelerated = true;}
+        // cout << "forced for close\n";}
+        if ((dX(CarPosition, final_destination) == 1 || dY(CarPosition, final_destination) == 1) && !forced) {
+            speed = HALF_SPEED;
+            forced = true;
+            decelerated = true;
+        }
+        // cout << "decelerated: " << decelerated << endl;
         if (!decelerated) accelerate();
         return forced;
     }
@@ -669,7 +738,7 @@ public:
         bool forced = force(W->get_maxsize());
         if (!forced) {
             turn(final_destination);
-        } else {cout << "forced something\n";}
+        }
         // cout << "CarDir: " << CarDirection.getX() << ", " << CarDirection.getY() << endl;
         int newCX = CarPosition.getX()+CarDirection.getX()*speed;
         int newCY = CarPosition.getY()+CarDirection.getY()*speed;
@@ -683,6 +752,7 @@ public:
             
         }
         WorldObject* newthing = W->get_thing(newCX, newCY);
+        if (newthing == this) newthing = new Road(newCX, newCY);
         CarPosition.setX(newCX);
         CarPosition.setY(newCY);
         set_position(CarPosition);
@@ -699,14 +769,18 @@ public:
         cout << endl << endl << endl;
         W->Update();
         // cout << "huh???\n";
-        LS.get_Readings(CarPosition, W);
-        RS.get_Readings(CarPosition, CarDirection, W);
+        World* copy = W;
+        LS.get_Readings(CarPosition, copy);
+        RS.get_Readings(CarPosition, CarDirection, copy);
         // cout << "I am confusion\n";
-        CS.get_Readings(CarPosition, CarDirection, W);
+        CS.get_Readings(CarPosition, CarDirection, copy);
         // cout << "here\n";
         fuseSensorData();
         execute(W);
         W->print_world();
+        LS.clear_readings();
+        RS.clear_readings();
+        CS.clear_readings();
         completed_readings.clear();
         // cout << "reaings empty: " << completed_readings.empty() << endl;
         // print();
@@ -718,4 +792,3 @@ public:
     void set_symbol() {symbol = '@'; return;}
     bool get_done() {return done;}
 };
-
