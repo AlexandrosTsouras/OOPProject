@@ -17,3 +17,10 @@ To make the code easier to read and follow, I have seperated it into 4 main part
     <br>• ACar.h: Where I define the car and everything about it
 
 <br>The project.cpp just brings it to life. \While not completely user-friendly, it works and is crystal clear.
+
+
+## Personal
+Αλέξανδρος Χρήστος Τσούρας 1115202400205
+Compilation:    g++ -c Vector2.h WorldObject.h World.h ACar.h
+                g++ -o project.exe project.cpp
+Execution: ./project.exe
